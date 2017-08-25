@@ -27,6 +27,10 @@ namespace EdSioux.Testing
 
         private static void Main(string[] _)
         {
+
+            ////var list = string.Join(Environment.NewLine, typeof(CurrentData).GetProperties().Select(prop => prop.Name));
+
+
             siouxData = JsonConvert.DeserializeObject<SiouxData>(File.ReadAllText(@"Resources\SiouxData.txt"));
 
             var appDataFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);

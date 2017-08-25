@@ -35,10 +35,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EdNetApi, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EdNetApi.1.1.0\lib\EdNetApi.dll</HintPath>
+      <HintPath>..\packages\EdNetApi.1.1.1\lib\EdNetApi.dll</HintPath>
     </Reference>
     <Reference Include="EdNetApi.Common, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EdNetApi.1.1.0\lib\EdNetApi.Common.dll</HintPath>
+      <HintPath>..\packages\EdNetApi.1.1.1\lib\EdNetApi.Common.dll</HintPath>
     </Reference>
     <Reference Include="JetBrains.Annotations, Version=11.0.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
       <HintPath>..\packages\JetBrains.Annotations.11.0.0\lib\net20\JetBrains.Annotations.dll</HintPath>
@@ -87,6 +87,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\SiouxData.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\SiouxDataTokens.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
