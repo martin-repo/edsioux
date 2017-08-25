@@ -1,0 +1,21 @@
+{
+  "filterOnCurrentCommander": true,
+  "events": [
+    {
+      "type": "Docked",
+      "format": "Docking #{count} at {stationName}"
+    },
+    {
+      "type": "SupercruiseEntry",
+      "format": "Supercruise #{count} in system {starSystem}"
+    },
+    {
+      "type": "SupercruiseExit",
+      "format": "Exiting at {bodyType} {body}"
+    },
+    {
+      "type": "Undocked",
+      "format": "Leaving {stationName}"
+    }
+  ]
+}
