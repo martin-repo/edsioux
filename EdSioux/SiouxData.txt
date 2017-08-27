@@ -10,11 +10,11 @@
     {
       "type": "DockingGranted",
       "format": "Docking granted\nHead to landing pad #{landingPad}",
-	  "displayDuration": 7
     },
     {
       "type": "FsdJump",
-      "format": "Arriving at {starSystem}\nThis is arrival #{ordinalCount}"
+      "format": "Arriving at {starSystem}\nThis is your {ordinalCount} visit",
+	  "displayDuration": 9
     },
     {
       "type": "Scanned",
@@ -27,12 +27,12 @@
     {
       "type": "SupercruiseEntry",
 	  "image": "supercruiseentry-speed.png",
-      "format": "Supercruise #{count} in system {starSystem}"
+      "format": "{ordinalCount} supercruise in system {starSystem}"
     },
     {
       "type": "SupercruiseExit",
 	  "image": "supercruiseexit-slow.png",
-      "format": "Exiting at {bodyType} {body}"
+      "format": "Exiting supercruise at\n{bodyType}: {body}"
     },
     {
       "type": "Undocked",

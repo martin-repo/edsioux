@@ -65,6 +65,8 @@ namespace EdSioux
 
         public KeyTime MessageClosedKeyTime { get; set; }
 
+        public string MessageHeader { get; set; }
+
         public List<SiouxMessagePart> MessageParts { get; private set; }
 
         public void MessageCompleted()
@@ -120,6 +122,10 @@ namespace EdSioux
                 try
                 {
                     var eventArgs = _messageQueue.Take(token);
+
+                    MessageHeader = eventArgs.Header;
+                    OnPropertyChanged(nameof(MessageHeader));
+
                     MessageParts = eventArgs.MessageParts;
                     MessageParts.ForEach(
                         part =>

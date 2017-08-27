@@ -89,7 +89,7 @@
                             FontFamily="#Euro Caps"
                             FontSize="26px"
                             Foreground="{Binding HudBrush}"
-                            Text="Sioux Event">
+                            Text="{Binding MessageHeader}">
                             <TextBlock.Effect>
                                 <BlurEffect
                                     KernelType="Gaussian"

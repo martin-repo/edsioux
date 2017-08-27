@@ -86,6 +86,30 @@ namespace EdSioux
             _informationManager = null;
         }
 
+        private static string GetOrdinalIndicator(int value)
+        {
+            var digit = value % 10;
+            switch (digit)
+            {
+                case 1:
+                    return "st";
+                case 2:
+                    return "nd";
+                case 3:
+                    return "rd";
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                    return "th";
+                ////case 0:
+                default:
+                    return string.Empty;
+            }
+        }
+
         private static string GetPropertyValue(object source, PropertyInfo property)
         {
             if (property == null || source == null)
@@ -226,15 +250,30 @@ namespace EdSioux
 
             var messageParts = new List<SiouxMessagePart>();
             var index = 0;
-            var text = format;
             foreach (var token in tokens)
             {
                 var tokenName = token.Groups["tokenName"].Value.ToLowerInvariant();
 
                 if (token.Index > index)
                 {
-                    messageParts.Add(new SiouxMessagePart { Text = text.Substring(index, token.Index - index) });
+                    messageParts.Add(new SiouxMessagePart { Text = format.Substring(index, token.Index - index) });
                 }
+
+                string value = null;
+
+                //// Alternative solution if the ordinal indicator should not be colored
+                ////
+                ////if (tokenName.Equals(CountValue) || tokenName.Equals(OrdinalCountValue))
+                ////{
+                ////    value = count >= 0 ? count.ToString() : string.Empty;
+                ////    messageParts.Add(new SiouxMessagePart { Text = value, Foreground = Brushes.ForestGreen });
+                ////    if (tokenName.Equals(OrdinalCountValue))
+                ////    {
+                ////        messageParts.Add(new SiouxMessagePart { Text = GetOrdinalIndicator(count) });
+                ////    }
+                ////    index = token.Index + token.Length;
+                ////    continue;
+                ////}
 
                 if (tokenName.Equals(CountValue) || tokenName.Equals(OrdinalCountValue))
                 {
@@ -251,12 +290,10 @@ namespace EdSioux
                     continue;
                 }
 
-                string value = null;
                 if (journalEntryProperties != null)
                 {
-                    var journalProperty =
-                        journalEntryProperties.FirstOrDefault(
-                            prop => prop.Name.Equals(tokenName, StringComparison.OrdinalIgnoreCase));
+                    var journalProperty = journalEntryProperties.FirstOrDefault(
+                        prop => prop.Name.Equals(tokenName, StringComparison.OrdinalIgnoreCase));
                     value = GetPropertyValue(journalEntry, journalProperty);
                     if (!string.IsNullOrEmpty(value))
                     {
@@ -290,31 +327,12 @@ namespace EdSioux
                 index = token.Index + token.Length;
             }
 
-            return messageParts;
-        }
-
-        private static string GetOrdinalIndicator(int value)
-        {
-            var digit = value % 10;
-            switch (digit)
+            if (index < format.Length)
             {
-                case 1:
-                    return "st";
-                case 2:
-                    return "nd";
-                case 3:
-                    return "rd";
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                    return "th";
-                case 0:
-                default:
-                    return string.Empty;
+                messageParts.Add(new SiouxMessagePart { Text = format.Substring(index) });
             }
+
+            return messageParts;
         }
 
         private int GetStatisticsCount(
@@ -342,7 +360,8 @@ namespace EdSioux
 
             foreach (var statisticsDataProperty in statisticsDataProperties)
             {
-                if (!tokenNames.Any(tokenName => tokenName.Equals(statisticsDataProperty.Name, StringComparison.OrdinalIgnoreCase)))
+                if (!tokenNames.Any(
+                        tokenName => tokenName.Equals(statisticsDataProperty.Name, StringComparison.OrdinalIgnoreCase)))
                 {
                     continue;
                 }
@@ -377,10 +396,12 @@ namespace EdSioux
             }
 
             var inlines = GetMessageParts(journalEntry, _siouxData.FilterOnCurrentCommander, siouxEvent.Format);
-            var displayDuration = siouxEvent.DisplayDuration != 0 ? siouxEvent.DisplayDuration : 3;
+            var displayDuration = siouxEvent.DisplayDuration != 0
+                                      ? siouxEvent.DisplayDuration
+                                      : _siouxData.DefaultDisplayDuration;
 
             var capitalRegex = new Regex(@"(?<!\A)[A-Z]");
-            var header = capitalRegex.Replace("MartinAmareldIsHere", match => " " + match.Value);
+            var header = capitalRegex.Replace(journalEntry.Event.ToString(), match => " " + match.Value);
 
             SiouxEventReceived.Raise(this, new SiouxEventArgs(header, inlines, displayDuration));
         }
