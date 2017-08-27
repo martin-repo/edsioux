@@ -6,15 +6,14 @@
 
 namespace EdSioux
 {
+    using System.Collections.Generic;
+
     using Newtonsoft.Json;
 
     public class SiouxData
     {
         [JsonProperty("filterOnCurrentCommander", Required = Required.Always)]
         public bool FilterOnCurrentCommander { get; set; }
-
-        [JsonProperty("defaultDisplayDuration", Required = Required.Always)]
-        public int DefaultDisplayDuration { get; set; }
 
         [JsonProperty("events", Required = Required.Always)]
         public SiouxEventCollection Events { get; set; }

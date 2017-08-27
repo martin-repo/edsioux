@@ -6,9 +6,13 @@
 
 namespace EdSioux
 {
+    using EdNetApi.Journal.Enums;
+
     public class CurrentData
     {
-        public string Ship { get; set; }
+        public string Commander { get; set; }
+
+        public ShipType Ship { get; set; }
 
         public string StarSystem { get; set; }
 
@@ -17,6 +21,5 @@ namespace EdSioux
         public string Body { get; set; }
 
         public string BodyType { get; set; }
-
     }
 }

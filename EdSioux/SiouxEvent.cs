@@ -13,14 +13,17 @@ namespace EdSioux
 
     public class SiouxEvent
     {
-        [JsonProperty("type")]
+        [JsonProperty("type", Required = Required.Always)]
         [JsonConverter(typeof(StringEnumConverter))]
         public JournalEventType Type { get; set; }
 
-        [JsonProperty("image")]
+        [JsonProperty("image", Required = Required.DisallowNull)]
         public string Image { get; set; }
 
-        [JsonProperty("format")]
+        [JsonProperty("format", Required = Required.Always)]
         public string Format { get; set; }
+
+        [JsonProperty("displayDuration", Required = Required.DisallowNull)]
+        public int DisplayDuration { get; set; }
     }
 }

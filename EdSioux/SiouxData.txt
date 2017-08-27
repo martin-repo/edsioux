@@ -1,0 +1,43 @@
+{
+  "filterOnCurrentCommander": true,
+  "defaultDisplayDuration": 5,
+  "events": [
+    {
+      "type": "Docked",
+	  "image": "docked-anchor.png",
+      "format": "Docking #{count} at {stationName}",
+    },
+    {
+      "type": "DockingGranted",
+      "format": "Docking granted\nHead to landing pad #{landingPad}",
+	  "displayDuration": 7
+    },
+    {
+      "type": "FsdJump",
+      "format": "Arriving at {starSystem}\nThis is arrival #{ordinalCount}"
+    },
+    {
+      "type": "Scanned",
+      "format": "Ship was scanned for {scanType}"
+    },
+    {
+      "type": "StartJump",
+      "format": "Engaging {jumpType} drive\nHeading for {starSystem}"
+    },
+    {
+      "type": "SupercruiseEntry",
+	  "image": "supercruiseentry-speed.png",
+      "format": "Supercruise #{count} in system {starSystem}"
+    },
+    {
+      "type": "SupercruiseExit",
+	  "image": "supercruiseexit-slow.png",
+      "format": "Exiting at {bodyType} {body}"
+    },
+    {
+      "type": "Undocked",
+	  "image": "undocked-exit.png",
+      "format": "Leaving {stationName}"
+    }
+  ]
+}
