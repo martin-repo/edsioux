@@ -1,11 +1,13 @@
 {
   "filterOnCurrentCommander": true,
   "defaultDisplayDuration": 5,
+  "defaultTextColorType": "Headline",
+  "defaultTokenColorType": "Default",
   "events": [
     {
       "type": "Docked",
 	  "image": "docked-anchor.png",
-      "format": "Docking #{count} at {stationName}",
+      "format": "Docking #{count:Friendly} at {stationName:Name}",
     },
     {
       "type": "DockingGranted",
@@ -18,7 +20,7 @@
     },
     {
       "type": "Scanned",
-      "format": "Ship was scanned for {scanType}"
+      "format": "Ship was scanned for {scanType:Information}"
     },
     {
       "type": "StartJump",
@@ -37,7 +39,7 @@
     {
       "type": "Undocked",
 	  "image": "undocked-exit.png",
-      "format": "Leaving {stationName}"
+      "format": "Leaving {stationName:Name}"
     }
   ]
 }

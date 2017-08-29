@@ -14,6 +14,7 @@ namespace EdSioux
     using System.Reflection;
     using System.Text;
     using System.Text.RegularExpressions;
+    using System.Threading;
     using System.Windows.Media;
 
     using EdNetApi.Common;
@@ -63,12 +64,15 @@ namespace EdSioux
 
             _informationManager = new InformationManager(appFolderPath, true);
             _informationManager.JournalEntryRead += OnJournalEntryRead;
+            _informationManager.JournalEntryException += OnJournalEntryException;
 
             // Start will read and cache all historical events and then return
             // If this is the first time then it might take a few minutes
             _informationManager.Start();
 
-            const string Text = "Hello Cmdr {commander}!\nCurrent ship: {ship}\nCurrent star system: {starSystem}";
+
+
+            const string Text = "Hello Cmdr {commander:Name}!\nCurrent ship: {ship}\nCurrent star system: {starSystem}";
             var inlines = GetMessageParts(null, false, Text);
             SiouxEventReceived.Raise(this, new SiouxEventArgs("SIOUX Online", inlines, 10));
         }
@@ -104,6 +108,7 @@ namespace EdSioux
                 case 8:
                 case 9:
                     return "th";
+
                 ////case 0:
                 default:
                     return string.Empty;
@@ -214,6 +219,20 @@ namespace EdSioux
             File.WriteAllText("SiouxDataTokens.txt", siouxDataTokens);
         }
 
+        private Brush GetBrushFromToken(Match token)
+        {
+            if (token.Groups["colorType"].Success)
+            {
+                ColorType colorType;
+                if (Enum.TryParse(token.Groups["colorType"].Value, out colorType))
+                {
+                    return ColorManager.Brushes[colorType];
+                }
+            }
+
+            return ColorManager.Brushes[_siouxData.DefaultTokenColorType];
+        }
+
         private IEnumerable<SiouxMessagePart> GetMessageParts(
             [CanBeNull] JournalEntry journalEntry,
             bool filterOnCurrentCommander,
@@ -230,7 +249,9 @@ namespace EdSioux
                                   };
             var currentDataProperties = currentData.GetType().GetProperties().ToList();
 
-            var tokenRegex = new Regex(@"(?<token>\{(?<tokenName>[A-Za-z]*)\})", RegexOptions.Compiled);
+            var tokenRegex = new Regex(
+                @"(?<token>\{(?<tokenName>[A-Za-z]*)(?<colorToken>:(?<colorType>[A-Za-z]*))?\})",
+                RegexOptions.Compiled);
             var tokens = tokenRegex.Matches(format).Cast<Match>().Distinct(new TokenMatchComparer()).ToList();
             var tokenNames = tokens.Select(token => token.Groups["tokenName"].Value.ToLowerInvariant()).ToList();
 
@@ -248,15 +269,23 @@ namespace EdSioux
                     currentDataProperties);
             }
 
+            var defaultBrush = ColorManager.Brushes[_siouxData.DefaultTextColorType];
+
             var messageParts = new List<SiouxMessagePart>();
             var index = 0;
             foreach (var token in tokens)
             {
                 var tokenName = token.Groups["tokenName"].Value.ToLowerInvariant();
+                var brush = GetBrushFromToken(token);
 
                 if (token.Index > index)
                 {
-                    messageParts.Add(new SiouxMessagePart { Text = format.Substring(index, token.Index - index) });
+                    messageParts.Add(
+                        new SiouxMessagePart
+                            {
+                                Text = format.Substring(index, token.Index - index),
+                                Foreground = defaultBrush
+                            });
                 }
 
                 string value = null;
@@ -274,7 +303,6 @@ namespace EdSioux
                 ////    index = token.Index + token.Length;
                 ////    continue;
                 ////}
-
                 if (tokenName.Equals(CountValue) || tokenName.Equals(OrdinalCountValue))
                 {
                     var countString = string.Empty;
@@ -285,7 +313,7 @@ namespace EdSioux
                                           : $"{count}{GetOrdinalIndicator(count)}";
                     }
 
-                    messageParts.Add(new SiouxMessagePart { Text = countString, Foreground = Brushes.ForestGreen });
+                    messageParts.Add(new SiouxMessagePart { Text = countString, Foreground = brush });
                     index = token.Index + token.Length;
                     continue;
                 }
@@ -297,7 +325,7 @@ namespace EdSioux
                     value = GetPropertyValue(journalEntry, journalProperty);
                     if (!string.IsNullOrEmpty(value))
                     {
-                        messageParts.Add(new SiouxMessagePart { Text = value, Foreground = Brushes.ForestGreen });
+                        messageParts.Add(new SiouxMessagePart { Text = value, Foreground = brush });
                         index = token.Index + token.Length;
                         continue;
                     }
@@ -309,7 +337,7 @@ namespace EdSioux
                 if (currentDataProperty != null)
                 {
                     value = GetPropertyValue(currentData, currentDataProperty);
-                    messageParts.Add(new SiouxMessagePart { Text = value, Foreground = Brushes.ForestGreen });
+                    messageParts.Add(new SiouxMessagePart { Text = value, Foreground = brush });
                     index = token.Index + token.Length;
                     continue;
                 }
@@ -329,7 +357,7 @@ namespace EdSioux
 
             if (index < format.Length)
             {
-                messageParts.Add(new SiouxMessagePart { Text = format.Substring(index) });
+                messageParts.Add(new SiouxMessagePart { Text = format.Substring(index), Foreground = defaultBrush });
             }
 
             return messageParts;
@@ -384,6 +412,11 @@ namespace EdSioux
 
             var count = _informationManager.GetEventStatisticsSum(statisticsData);
             return count;
+        }
+
+        private void OnJournalEntryException(object sender, ThreadExceptionEventArgs eventArgs)
+        {
+            // TODO:
         }
 
         private void OnJournalEntryRead(object sender, JournalEntryEventArgs eventArgs)

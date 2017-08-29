@@ -39,10 +39,7 @@ namespace EdSioux
 
             _siouxManager = new SiouxManager();
 
-            HudBrush = Brushes.GhostWhite;
-            HudColor = Colors.GhostWhite;
-            GlowColor = Colors.Yellow;
-            TitleColor = Colors.Red;
+            HudBrush = ColorManager.Brushes[ColorType.Default];
 
             var messageQueue = new ConcurrentQueue<SiouxEventArgs>();
             _messageQueue = new BlockingCollection<SiouxEventArgs>(messageQueue);
@@ -53,13 +50,7 @@ namespace EdSioux
 
         public event EventHandler<EventArgs> ShowMessage;
 
-        public Color TitleColor { get; set; }
-
-        public Color HudColor { get; set; }
-
         public Brush HudBrush { get; set; }
-
-        public Color GlowColor { get; set; }
 
         public KeyTime MessageDurationKeyTime { get; set; }
 
@@ -127,14 +118,6 @@ namespace EdSioux
                     OnPropertyChanged(nameof(MessageHeader));
 
                     MessageParts = eventArgs.MessageParts;
-                    MessageParts.ForEach(
-                        part =>
-                            {
-                                if (part.Foreground == null)
-                                {
-                                    part.Foreground = HudBrush;
-                                }
-                            });
                     OnPropertyChanged(nameof(MessageParts));
 
                     var duration = eventArgs.DisplayDuration + 1;

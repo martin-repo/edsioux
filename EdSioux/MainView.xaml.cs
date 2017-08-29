@@ -63,9 +63,9 @@ namespace EdSioux
                 case ClockState.Stopped:
                     _viewModel.MessageCompleted();
                     break;
-                case ClockState.Active:
-                default:
-                    break;
+                ////case ClockState.Active:
+                ////default:
+                ////    break;
             }
         }
 
