@@ -62,6 +62,7 @@
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
 
-*.manifest binary
-*.application binary
-*.deploy binary
+*.manifest     binary
+*.application  binary
+*.deploy       binary
+*.htm          binary
