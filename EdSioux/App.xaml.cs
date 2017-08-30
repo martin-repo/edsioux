@@ -8,12 +8,33 @@ namespace EdSioux
 {
     using System;
     using System.Diagnostics;
+    using System.Windows;
 
-    public partial class App 
+    using Squirrel;
+
+    public partial class App
     {
         public App()
         {
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+        }
+
+        protected override async void OnStartup(StartupEventArgs eventArgs)
+        {
+            base.OnStartup(eventArgs);
+
+            try
+            {
+                using (var updateManager = UpdateManager.GitHubUpdateManager("https://github.com/mbedatpro/edsioux"))
+                {
+                    await updateManager.Result.UpdateApp();
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+           
         }
 
         private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs eventArgs)
@@ -22,6 +43,8 @@ namespace EdSioux
             {
                 Debugger.Break();
             }
+
+            MessageBox.Show(((Exception)eventArgs.ExceptionObject).Message);
         }
     }
 }
