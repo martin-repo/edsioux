@@ -7,7 +7,7 @@
     {
       "type": "Docked",
 	  "image": "docked-anchor.png",
-      "format": "Docking #{count:Friendly} at {stationName:Name}",
+      "format": "Docking #{count:friendly} at {stationName:name}",
     },
     {
       "type": "DockingGranted",
@@ -17,6 +17,14 @@
       "type": "FsdJump",
       "format": "Arriving at {starSystem}\nThis is your {ordinalCount} visit",
 	  "displayDuration": 9
+    },
+	{
+      "type": "GamePlayed",
+      "format": "You've been playing for\n{sessionsPlayed}",
+    },
+    {
+      "type": "LoadGame",
+      "format": "Session #{sessionsPlayed} started\nYou've been playing for\n{totalTimePlayed}",
     },
     {
       "type": "Scanned",
@@ -39,7 +47,7 @@
     {
       "type": "Undocked",
 	  "image": "undocked-exit.png",
-      "format": "Leaving {stationName:Name}"
+      "format": "Leaving {stationName:name}"
     }
   ]
 }

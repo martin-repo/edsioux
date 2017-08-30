@@ -17,24 +17,24 @@
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>feather.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\feather.ico</ApplicationIcon>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
@@ -71,21 +71,21 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ColorAttribute.cs" />
-    <Compile Include="ColorManager.cs" />
-    <Compile Include="ColorType.cs" />
-    <Compile Include="CurrentData.cs" />
-    <Compile Include="Planerator.cs" />
-    <Compile Include="SiouxMessagePart.cs" />
-    <Compile Include="SiouxEventArgs.cs" />
-    <Compile Include="InlineTextBlock.cs" />
-    <Compile Include="MainViewModel.cs" />
-    <Compile Include="IListExtensions.cs" />
-    <Compile Include="SiouxData.cs" />
-    <Compile Include="SiouxEventCollection.cs" />
-    <Compile Include="SiouxEvent.cs" />
-    <Compile Include="SiouxManager.cs" />
-    <Page Include="MainView.xaml">
+    <Compile Include="Managers\ColorAttribute.cs" />
+    <Compile Include="Managers\ColorManager.cs" />
+    <Compile Include="Managers\ColorType.cs" />
+    <Compile Include="Models\CurrentData.cs" />
+    <Compile Include="Views\Planerator.cs" />
+    <Compile Include="Models\SiouxMessagePart.cs" />
+    <Compile Include="Models\SiouxEventArgs.cs" />
+    <Compile Include="Views\InlineTextBlock.cs" />
+    <Compile Include="Views\MainViewModel.cs" />
+    <Compile Include="Common\IListExtensions.cs" />
+    <Compile Include="Models\SiouxData.cs" />
+    <Compile Include="Models\SiouxEventCollection.cs" />
+    <Compile Include="Models\SiouxEvent.cs" />
+    <Compile Include="Managers\SiouxManager.cs" />
+    <Page Include="Views\MainView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -93,7 +93,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainView.xaml.cs">
+    <Compile Include="Views\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
@@ -116,8 +116,8 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Resource Include="Sintony-Regular.ttf" />
-    <Resource Include="EUROCAPS.TTF" />
+    <Resource Include="Resources\Sintony-Regular.ttf" />
+    <Resource Include="Resources\EUROCAPS.TTF" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -128,16 +128,14 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="feather.ico" />
-    <Content Include="SiouxData.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Resource Include="Resources\feather.ico" />
+    <EmbeddedResource Include="Resources\SiouxData.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="tent.png" />
+    <Resource Include="Resources\tent.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="tent.txt" />
+    <None Include="Resources\tent.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ednetapi\EdNetApi.Common\EdNetApi.Common.csproj">
@@ -149,8 +147,9 @@
       <Name>EdNetApi</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(SolutionDir)..\ednetapi\EdNetApi\bin\x64\$(ConfigurationName)\x64\SQLite.Interop.dll $(TargetDir)</PostBuildEvent>
+    <PostBuildEvent>copy $(SolutionDir)..\ednetapi\EdNetApi\bin\$(ConfigurationName)\x64\SQLite.Interop.dll $(TargetDir)</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -4,7 +4,7 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace EdSioux
+namespace EdSioux.Managers
 {
     using System;
     using System.Windows.Media;
@@ -18,7 +18,7 @@ namespace EdSioux
 
         public ColorAttribute(string color)
         {
-            Color = (Color)ColorConverter.ConvertFromString(color);
+            Color = (Color)(ColorConverter.ConvertFromString(color) ?? Colors.White);
         }
 
         public Color Color { get; set; }

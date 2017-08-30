@@ -1,17 +1,17 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="SiouxMessagePart.cs" company="Martin Amareld">
+// <copyright file="SiouxEventCollection.cs" company="Martin Amareld">
 //   Copyright(c) 2017 Martin Amareld. All rights reserved. 
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace EdSioux
+namespace EdSioux.Models
 {
-    using System.Windows.Media;
+    using System.Collections.Generic;
 
-    public class SiouxMessagePart
+    using Newtonsoft.Json;
+
+    [JsonArray(false)]
+    public class SiouxEventCollection : List<SiouxEvent>
     {
-        public string Text { get; set; }
-
-        public Brush Foreground { get; set; }
     }
 }

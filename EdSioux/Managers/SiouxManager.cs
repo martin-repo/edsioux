@@ -4,7 +4,7 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace EdSioux
+namespace EdSioux.Managers
 {
     using System;
     using System.Collections.Generic;
@@ -21,6 +21,9 @@ namespace EdSioux
     using EdNetApi.Information;
     using EdNetApi.Journal;
 
+    using EdSioux.Common;
+    using EdSioux.Models;
+
     using JetBrains.Annotations;
 
     using Newtonsoft.Json.Linq;
@@ -33,6 +36,9 @@ namespace EdSioux
         private const string OrdinalCountValue = "ordinalcount";
 
         private readonly SiouxData _siouxData;
+        private readonly List<string> _gameStatisticsNames;
+        private readonly Timer _onTheHourTimer;
+        private readonly string _appFolderPath;
 
         private InformationManager _informationManager;
 
@@ -40,13 +46,32 @@ namespace EdSioux
         {
             GenerateSiouxDataTokensFile();
 
-            const string FilePath = "SiouxData.txt";
-            List<string> errorMessages;
-            if (!LoadSiouxData(FilePath, out _siouxData, out errorMessages))
+            var appDataFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            _appFolderPath = Path.Combine(appDataFolderPath, Assembly.GetEntryAssembly().GetName().Name);
+            if (!Directory.Exists(_appFolderPath))
             {
-                errorMessages.Insert(0, $"Failed to load SiouxData at {FilePath}");
+                Directory.CreateDirectory(_appFolderPath);
+            }
+
+            List<string> errorMessages;
+            if (!LoadSiouxData(out _siouxData, out errorMessages))
+            {
+                errorMessages.Insert(0, $"Failed to load SiouxData at {_appFolderPath}");
                 throw new ApplicationException(string.Join(Environment.NewLine, errorMessages));
             }
+
+            _gameStatisticsNames = typeof(GameStatistics).GetProperties().Select(prop => prop.Name.ToLowerInvariant())
+                .ToList();
+
+            _onTheHourTimer = new Timer(
+                state =>
+                    {
+                        var siouxEvent = _siouxData.Events.FirstOrDefault(e => e.Type == JournalEventType.GamePlayed);
+                        RaiseSiouxEventReceived(siouxEvent, "SIOUX Update", null);
+                    },
+                null,
+                Timeout.Infinite,
+                Timeout.Infinite);
         }
 
         public event EventHandler<SiouxEventArgs> SiouxEventReceived;
@@ -55,14 +80,7 @@ namespace EdSioux
         {
             Stop();
 
-            var appDataFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var appFolderPath = Path.Combine(appDataFolderPath, Assembly.GetEntryAssembly().GetName().Name);
-            if (!Directory.Exists(appFolderPath))
-            {
-                Directory.CreateDirectory(appFolderPath);
-            }
-
-            _informationManager = new InformationManager(appFolderPath, true);
+            _informationManager = new InformationManager(_appFolderPath, true);
             _informationManager.JournalEntryRead += OnJournalEntryRead;
             _informationManager.JournalEntryException += OnJournalEntryException;
 
@@ -70,15 +88,19 @@ namespace EdSioux
             // If this is the first time then it might take a few minutes
             _informationManager.Start();
 
-
-
-            const string Text = "Hello Cmdr {commander:Name}!\nCurrent ship: {ship}\nCurrent star system: {starSystem}";
+            const string Text =
+                "Hello Cmdr {commander:Name}!\nCurrent ship: {ship}\nCurrent star system: {starSystem}\nSessions played: {SessionsPlayed}\nTime played: {TotalTimePlayed}";
             var inlines = GetMessageParts(null, false, Text);
-            SiouxEventReceived.Raise(this, new SiouxEventArgs("SIOUX Online", inlines, 10));
+            SiouxEventReceived.Raise(this, new SiouxEventArgs("SIOUX Online", inlines, 15));
+
+            var msToNextHour = (((60 - DateTime.UtcNow.Minute) * 60) - DateTime.UtcNow.Second) * 1000;
+            _onTheHourTimer.Change(msToNextHour, 60 * 60 * 1000);
         }
 
         public void Stop()
         {
+            _onTheHourTimer.Change(Timeout.Infinite, Timeout.Infinite);
+
             if (_informationManager == null)
             {
                 return;
@@ -132,13 +154,23 @@ namespace EdSioux
             return !string.IsNullOrEmpty(description) ? description : enumValue.ToString();
         }
 
-        private static bool LoadSiouxData(string filePath, out SiouxData siouxData, out List<string> errorMessages)
+        private bool LoadSiouxData(out SiouxData siouxData, out List<string> errorMessages)
         {
+            const string Filename = "SiouxData.txt";
+            var filePath = Path.Combine(_appFolderPath, Filename);
+
             if (!File.Exists(filePath))
             {
-                siouxData = null;
-                errorMessages = new List<string> { "File not found" };
-                return false;
+                using (var resource = Assembly.GetExecutingAssembly().GetManifestResourceStream("EdSioux.Resources.SiouxData.txt"))
+                {
+                    if (resource != null)
+                    {
+                        using (var file = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                        {
+                            resource.CopyTo(file);
+                        }
+                    }
+                }
             }
 
             JObject jObject;
@@ -224,7 +256,7 @@ namespace EdSioux
             if (token.Groups["colorType"].Success)
             {
                 ColorType colorType;
-                if (Enum.TryParse(token.Groups["colorType"].Value, out colorType))
+                if (Enum.TryParse(token.Groups["colorType"].Value, true, out colorType))
                 {
                     return ColorManager.Brushes[colorType];
                 }
@@ -239,14 +271,14 @@ namespace EdSioux
             string format)
         {
             var currentData = new CurrentData
-                                  {
-                                      Commander = _informationManager.CurrentCommander.Commander,
-                                      Ship = _informationManager.CurrentShip.Ship,
-                                      StarSystem = _informationManager.CurrentLocation.StarSystem,
-                                      StationName = _informationManager.CurrentLocation.StationName,
-                                      Body = _informationManager.CurrentLocation.Body,
-                                      BodyType = _informationManager.CurrentLocation.BodyType
-                                  };
+            {
+                Commander = _informationManager.CurrentCommander.Commander,
+                Ship = _informationManager.CurrentShip.Ship,
+                StarSystem = _informationManager.CurrentLocation.StarSystem,
+                StationName = _informationManager.CurrentLocation.StationName,
+                Body = _informationManager.CurrentLocation.Body,
+                BodyType = _informationManager.CurrentLocation.BodyType
+            };
             var currentDataProperties = currentData.GetType().GetProperties().ToList();
 
             var tokenRegex = new Regex(
@@ -271,6 +303,7 @@ namespace EdSioux
 
             var defaultBrush = ColorManager.Brushes[_siouxData.DefaultTextColorType];
 
+            GameStatistics gameStatistics = null;
             var messageParts = new List<SiouxMessagePart>();
             var index = 0;
             foreach (var token in tokens)
@@ -282,10 +315,10 @@ namespace EdSioux
                 {
                     messageParts.Add(
                         new SiouxMessagePart
-                            {
-                                Text = format.Substring(index, token.Index - index),
-                                Foreground = defaultBrush
-                            });
+                        {
+                            Text = format.Substring(index, token.Index - index),
+                            Foreground = defaultBrush
+                        });
                 }
 
                 string value = null;
@@ -318,6 +351,35 @@ namespace EdSioux
                     continue;
                 }
 
+                if (_gameStatisticsNames.Contains(tokenName))
+                {
+                    gameStatistics = gameStatistics ?? _informationManager.GetGamePlayedStatistics();
+
+                    string text;
+                    switch (tokenName)
+                    {
+                        case "sessionsplayed":
+                            text = gameStatistics.SessionsPlayed.ToString();
+                            break;
+                        case "totaltimeplayed":
+                            text =
+                                $"{gameStatistics.TotalTimePlayed.Days} days {gameStatistics.TotalTimePlayed.Hours} hours {gameStatistics.TotalTimePlayed.Minutes} minutes";
+                            break;
+                        case "currentsessionplayed":
+                            text =
+                                $"{gameStatistics.CurrentSessionPlayed?.Days} days {gameStatistics.CurrentSessionPlayed?.Hours} hours {gameStatistics.CurrentSessionPlayed?.Minutes} minutes";
+                            break;
+                        default:
+                            // TODO: Handle by sending feedback
+                            text = "ERROR";
+                            break;
+                    }
+
+                    messageParts.Add(new SiouxMessagePart { Text = text, Foreground = brush });
+                    index = token.Index + token.Length;
+                    continue;
+                }
+
                 if (journalEntryProperties != null)
                 {
                     var journalProperty = journalEntryProperties.FirstOrDefault(
@@ -346,10 +408,10 @@ namespace EdSioux
                 {
                     messageParts.Add(
                         new SiouxMessagePart
-                            {
-                                Text = $"(no value found for {tokenName})",
-                                Foreground = Brushes.OrangeRed
-                            });
+                        {
+                            Text = $"(no value found for {tokenName})",
+                            Foreground = Brushes.OrangeRed
+                        });
                 }
 
                 index = token.Index + token.Length;
@@ -371,20 +433,20 @@ namespace EdSioux
             CurrentData currentData,
             List<PropertyInfo> currentDataProperties)
         {
-            var statisticsData = new StatisticsData
-                                     {
-                                         Commander =
+            var statisticsData = new EventStatisticsData
+            {
+                Commander =
                                              filterOnCurrentCommander
                                                  ? _informationManager.CurrentCommander.Commander
                                                  : null,
-                                         Event = journalEntry.Event
-                                     };
+                Event = journalEntry.Event
+            };
             var statisticsDataProperties = statisticsData.GetType().GetProperties().ToList();
 
             // Remove properties that are not allowed to be overridden
-            statisticsDataProperties.RemoveWhere(prop => prop.Name == nameof(StatisticsData.Commander));
-            statisticsDataProperties.RemoveWhere(prop => prop.Name == nameof(StatisticsData.Event));
-            statisticsDataProperties.RemoveWhere(prop => prop.Name == nameof(StatisticsData.Count));
+            statisticsDataProperties.RemoveWhere(prop => prop.Name == nameof(EventStatisticsData.Commander));
+            statisticsDataProperties.RemoveWhere(prop => prop.Name == nameof(EventStatisticsData.Event));
+            statisticsDataProperties.RemoveWhere(prop => prop.Name == nameof(EventStatisticsData.Count));
 
             foreach (var statisticsDataProperty in statisticsDataProperties)
             {
@@ -428,13 +490,23 @@ namespace EdSioux
                 return;
             }
 
+            var capitalRegex = new Regex(@"(?<!\A)[A-Z]");
+            var header = capitalRegex.Replace(journalEntry.Event.ToString(), match => " " + match.Value);
+
+            RaiseSiouxEventReceived(siouxEvent, header, journalEntry);
+        }
+
+        private void RaiseSiouxEventReceived(SiouxEvent siouxEvent, string header, JournalEntry journalEntry)
+        {
+            if (siouxEvent == null)
+            {
+                return;
+            }
+
             var inlines = GetMessageParts(journalEntry, _siouxData.FilterOnCurrentCommander, siouxEvent.Format);
             var displayDuration = siouxEvent.DisplayDuration != 0
                                       ? siouxEvent.DisplayDuration
                                       : _siouxData.DefaultDisplayDuration;
-
-            var capitalRegex = new Regex(@"(?<!\A)[A-Z]");
-            var header = capitalRegex.Replace(journalEntry.Event.ToString(), match => " " + match.Value);
 
             SiouxEventReceived.Raise(this, new SiouxEventArgs(header, inlines, displayDuration));
         }

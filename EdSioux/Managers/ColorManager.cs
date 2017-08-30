@@ -4,7 +4,7 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace EdSioux
+namespace EdSioux.Managers
 {
     using System;
     using System.Collections.Generic;
@@ -34,23 +34,27 @@ namespace EdSioux
 
         public static Dictionary<ColorType, Brush> Brushes { get; }
 
-        private static Bitmap ApplyLinearMatrix(Bitmap bitmap, float[][] linearMatrix)
+        /// <summary>
+        /// Applies matrix to the input bitmap
+        /// </summary>
+        /// <param name="bitmap">Bitmap, in standard color space</param>
+        /// <param name="matrix">Matrix to use</param>
+        /// <returns>Bitmap with matrix applied, in linear color space</returns>
+        private static Bitmap ApplyLinearMatrix(Bitmap bitmap, float[][] matrix)
         {
             float[][] rgbMatrix =
                 {
-                    new[] { linearMatrix[0][0], linearMatrix[1][0], linearMatrix[2][0], linearMatrix[3][0], 0 },
-                    new[] { linearMatrix[0][1], linearMatrix[1][1], linearMatrix[2][1], linearMatrix[3][1], 0 },
-                    new[] { linearMatrix[0][2], linearMatrix[1][2], linearMatrix[2][2], linearMatrix[3][2], 0 },
-                    new[] { linearMatrix[0][3], linearMatrix[1][3], linearMatrix[2][3], linearMatrix[3][3], 0 },
+                    new[] { matrix[0][0], matrix[1][0], matrix[2][0], matrix[3][0], 0 },
+                    new[] { matrix[0][1], matrix[1][1], matrix[2][1], matrix[3][1], 0 },
+                    new[] { matrix[0][2], matrix[1][2], matrix[2][2], matrix[3][2], 0 },
+                    new[] { matrix[0][3], matrix[1][3], matrix[2][3], matrix[3][3], 0 },
                     new[] { 0, 0, 0, 0, 1f }
                 };
             var colorMatrix = new ColorMatrix(rgbMatrix);
 
-            // Create target bitmap
             var targetBitmap = new Bitmap(bitmap);
             using (var targetGraphics = Graphics.FromImage(targetBitmap))
             {
-                // Draw on target bitmap using color matrix
                 var imageAttributes = new ImageAttributes();
                 imageAttributes.SetColorMatrix(colorMatrix);
                 imageAttributes.SetGamma(1 / 2.2f);

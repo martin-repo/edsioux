@@ -11,22 +11,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdNetApi", "..\ednetapi\EdN
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Release|x64 = Release|x64
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5EBB1565-974E-47E2-AC62-9BA7A973D760}.Debug|x64.ActiveCfg = Debug|x64
-		{5EBB1565-974E-47E2-AC62-9BA7A973D760}.Debug|x64.Build.0 = Debug|x64
-		{5EBB1565-974E-47E2-AC62-9BA7A973D760}.Release|x64.ActiveCfg = Release|x64
-		{5EBB1565-974E-47E2-AC62-9BA7A973D760}.Release|x64.Build.0 = Release|x64
-		{A5BCD0D2-F9B4-4E0C-8AD2-23809CAE8B88}.Debug|x64.ActiveCfg = Debug|x64
-		{A5BCD0D2-F9B4-4E0C-8AD2-23809CAE8B88}.Debug|x64.Build.0 = Debug|x64
-		{A5BCD0D2-F9B4-4E0C-8AD2-23809CAE8B88}.Release|x64.ActiveCfg = Release|x64
-		{A5BCD0D2-F9B4-4E0C-8AD2-23809CAE8B88}.Release|x64.Build.0 = Release|x64
-		{2937A617-9039-46B7-B2E7-089687194E6F}.Debug|x64.ActiveCfg = Debug|x64
-		{2937A617-9039-46B7-B2E7-089687194E6F}.Debug|x64.Build.0 = Debug|x64
-		{2937A617-9039-46B7-B2E7-089687194E6F}.Release|x64.ActiveCfg = Release|x64
-		{2937A617-9039-46B7-B2E7-089687194E6F}.Release|x64.Build.0 = Release|x64
+		{5EBB1565-974E-47E2-AC62-9BA7A973D760}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EBB1565-974E-47E2-AC62-9BA7A973D760}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EBB1565-974E-47E2-AC62-9BA7A973D760}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EBB1565-974E-47E2-AC62-9BA7A973D760}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5BCD0D2-F9B4-4E0C-8AD2-23809CAE8B88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5BCD0D2-F9B4-4E0C-8AD2-23809CAE8B88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5BCD0D2-F9B4-4E0C-8AD2-23809CAE8B88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5BCD0D2-F9B4-4E0C-8AD2-23809CAE8B88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2937A617-9039-46B7-B2E7-089687194E6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2937A617-9039-46B7-B2E7-089687194E6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2937A617-9039-46B7-B2E7-089687194E6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2937A617-9039-46B7-B2E7-089687194E6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

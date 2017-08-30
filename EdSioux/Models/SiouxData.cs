@@ -4,8 +4,10 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace EdSioux
+namespace EdSioux.Models
 {
+    using EdSioux.Managers;
+
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
 

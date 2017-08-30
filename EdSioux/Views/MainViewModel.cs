@@ -4,7 +4,7 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace EdSioux
+namespace EdSioux.Views
 {
     using System;
     using System.Collections.Concurrent;
@@ -18,6 +18,9 @@ namespace EdSioux
     using System.Windows.Media.Animation;
 
     using EdNetApi.Common;
+
+    using EdSioux.Managers;
+    using EdSioux.Models;
 
     using JetBrains.Annotations;
 
