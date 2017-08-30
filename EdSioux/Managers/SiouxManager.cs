@@ -30,6 +30,8 @@ namespace EdSioux.Managers
     using Newtonsoft.Json.Schema;
     using Newtonsoft.Json.Schema.Generation;
 
+    using Squirrel;
+
     internal class SiouxManager
     {
         private const string CountValue = "count";
@@ -72,6 +74,11 @@ namespace EdSioux.Managers
                 null,
                 Timeout.Infinite,
                 Timeout.Infinite);
+
+            using (var updateManager = UpdateManager.GitHubUpdateManager("https://github.com/mbedatpro/edsioux"))
+            {
+                updateManager.Result.UpdateApp().Wait();
+            }
         }
 
         public event EventHandler<SiouxEventArgs> SiouxEventReceived;
