@@ -13,11 +13,16 @@ EdSioux will present statistical information as overlays while playing the game 
 * Elite: Dangerous should run on the main display (if multi-display setup)
 * Screen resolution of 1920x1080 is supported
 
-## Installation
+## Install
 
 1. Download the zip-file from the [latest release](https://github.com/mbedatpro/edsioux/releases/latest)
 2. Unzip to where you want the program
 3. Run EdSioux.exe
+
+## Uninstall
+
+1. Delete the folder where you unzipped the program
+2. Delete the folder "%LOCALAPPDATA%\EdSioux"
 
 ## Legal
 
