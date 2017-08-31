@@ -19,14 +19,13 @@ namespace EdSioux.Views
 
     using EdNetApi.Common;
 
-    using EdSioux.Managers;
-    using EdSioux.Models;
+    using EdSioux.Color;
+    using EdSioux.Sioux;
 
     using JetBrains.Annotations;
 
     public class MainViewModel : INotifyPropertyChanged
     {
-        private readonly SiouxManager _siouxManager;
         private readonly BlockingCollection<SiouxEventArgs> _messageQueue;
         private readonly ManualResetEventSlim _viewMessageCompletedEvent;
 
@@ -39,8 +38,6 @@ namespace EdSioux.Views
             {
                 return;
             }
-
-            _siouxManager = new SiouxManager();
 
             HudBrush = ColorManager.Brushes[ColorType.Default];
 
@@ -72,13 +69,13 @@ namespace EdSioux.Views
         {
             Stop();
 
-            _siouxManager.SiouxEventReceived += OnSiouxEventReceived;
+            SiouxManager.Instance.SiouxEventReceived += OnSiouxEventReceived;
             _messageDispatcherTokenSource = new CancellationTokenSource();
             _messageDispatcherTask = Task.Factory.StartNew(
                 o => ProcessMessages(_messageDispatcherTokenSource.Token),
                 null,
                 TaskCreationOptions.LongRunning);
-            _siouxManager.Start();
+            Task.Run(() => SiouxManager.Instance.Start());
         }
 
         public void Stop()
@@ -89,8 +86,8 @@ namespace EdSioux.Views
             _messageDispatcherTask?.Wait();
             _messageDispatcherTask = null;
 
-            _siouxManager.Stop();
-            _siouxManager.SiouxEventReceived -= OnSiouxEventReceived;
+            SiouxManager.Instance.Stop();
+            SiouxManager.Instance.SiouxEventReceived -= OnSiouxEventReceived;
         }
 
         [NotifyPropertyChangedInvocator]

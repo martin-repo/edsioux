@@ -4,7 +4,7 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace EdSioux.Managers
+namespace EdSioux.Color
 {
     public enum ColorType
     {

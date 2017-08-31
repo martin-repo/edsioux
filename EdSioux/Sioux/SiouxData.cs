@@ -4,15 +4,18 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace EdSioux.Models
+namespace EdSioux.Sioux
 {
-    using EdSioux.Managers;
+    using EdSioux.Color;
 
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
 
     public class SiouxData
     {
+        [JsonProperty("allowAnonymousErrorFeedback", Required = Required.Always)]
+        public bool AllowAnonymousErrorFeedback { get; set; }
+
         [JsonProperty("filterOnCurrentCommander", Required = Required.Always)]
         public bool FilterOnCurrentCommander { get; set; }
 

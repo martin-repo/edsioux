@@ -4,7 +4,7 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace EdSioux.Managers
+namespace EdSioux.Color
 {
     using System;
     using System.Windows.Media;

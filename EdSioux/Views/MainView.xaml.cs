@@ -19,6 +19,8 @@ namespace EdSioux.Views
 
         public MainView()
         {
+            new LoadView().Show();
+
             InitializeComponent();
 
             _viewModel = (MainViewModel)DataContext;

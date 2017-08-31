@@ -4,7 +4,7 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace EdSioux.Models
+namespace EdSioux.Sioux
 {
     using EdNetApi.Journal;
 

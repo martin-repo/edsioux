@@ -12,7 +12,7 @@ namespace EdSioux.Views
     using System.Windows.Controls;
     using System.Windows.Documents;
 
-    using EdSioux.Models;
+    using EdSioux.Sioux;
 
     public class InlineTextBlock : TextBlock
     {

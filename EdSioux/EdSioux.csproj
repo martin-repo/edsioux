@@ -79,11 +79,11 @@
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
-    <Reference Include="EdNetApi, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EdNetApi.1.3.0\lib\EdNetApi.dll</HintPath>
+    <Reference Include="EdNetApi, Version=1.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EdNetApi.1.4.0\lib\EdNetApi.dll</HintPath>
     </Reference>
-    <Reference Include="EdNetApi.Common, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EdNetApi.1.3.0\lib\EdNetApi.Common.dll</HintPath>
+    <Reference Include="EdNetApi.Common, Version=1.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EdNetApi.1.4.0\lib\EdNetApi.Common.dll</HintPath>
     </Reference>
     <Reference Include="Hardcodet.Wpf.TaskbarNotification, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Hardcodet.NotifyIcon.Wpf.1.0.8\lib\net451\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
@@ -135,20 +135,29 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Managers\ColorAttribute.cs" />
-    <Compile Include="Managers\ColorManager.cs" />
-    <Compile Include="Managers\ColorType.cs" />
-    <Compile Include="Models\CurrentData.cs" />
+    <Compile Include="Color\ColorAttribute.cs" />
+    <Compile Include="Color\ColorManager.cs" />
+    <Compile Include="Color\ColorType.cs" />
+    <Compile Include="Sioux\CurrentData.cs" />
+    <Compile Include="Sioux\ProgressEventArgs.cs" />
+    <Compile Include="Views\LoadView.xaml.cs">
+      <DependentUpon>LoadView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\LoadViewModel.cs" />
     <Compile Include="Views\Planerator.cs" />
-    <Compile Include="Models\SiouxMessagePart.cs" />
-    <Compile Include="Models\SiouxEventArgs.cs" />
+    <Compile Include="Sioux\SiouxMessagePart.cs" />
+    <Compile Include="Sioux\SiouxEventArgs.cs" />
     <Compile Include="Views\InlineTextBlock.cs" />
     <Compile Include="Views\MainViewModel.cs" />
     <Compile Include="Common\IListExtensions.cs" />
-    <Compile Include="Models\SiouxData.cs" />
-    <Compile Include="Models\SiouxEventCollection.cs" />
-    <Compile Include="Models\SiouxEvent.cs" />
-    <Compile Include="Managers\SiouxManager.cs" />
+    <Compile Include="Sioux\SiouxData.cs" />
+    <Compile Include="Sioux\SiouxEventCollection.cs" />
+    <Compile Include="Sioux\SiouxEvent.cs" />
+    <Compile Include="Sioux\SiouxManager.cs" />
+    <Page Include="Views\LoadView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

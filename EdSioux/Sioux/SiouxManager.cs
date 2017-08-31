@@ -4,7 +4,7 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace EdSioux.Managers
+namespace EdSioux.Sioux
 {
     using System;
     using System.Collections.Generic;
@@ -21,8 +21,8 @@ namespace EdSioux.Managers
     using EdNetApi.Information;
     using EdNetApi.Journal;
 
+    using EdSioux.Color;
     using EdSioux.Common;
-    using EdSioux.Models;
 
     using JetBrains.Annotations;
 
@@ -35,14 +35,18 @@ namespace EdSioux.Managers
         private const string CountValue = "count";
         private const string OrdinalCountValue = "ordinalcount";
 
+        private static SiouxManager instance;
+
         private readonly SiouxData _siouxData;
         private readonly List<string> _gameStatisticsNames;
         private readonly Timer _onTheHourTimer;
         private readonly string _appFolderPath;
 
         private InformationManager _informationManager;
+        private string _currentLoadFilename;
+        private List<string> _loadJournalFilenames;
 
-        public SiouxManager()
+        private SiouxManager()
         {
             GenerateSiouxDataTokensFile();
 
@@ -76,17 +80,22 @@ namespace EdSioux.Managers
 
         public event EventHandler<SiouxEventArgs> SiouxEventReceived;
 
+        public event EventHandler<ProgressEventArgs> LoadProgress;
+
+        public static SiouxManager Instance => instance ?? (instance = new SiouxManager());
+
         public void Start()
         {
             Stop();
 
-            _informationManager = new InformationManager(_appFolderPath, true);
+            _informationManager = new InformationManager(_appFolderPath, _siouxData.AllowAnonymousErrorFeedback);
             _informationManager.JournalEntryRead += OnJournalEntryRead;
             _informationManager.JournalEntryException += OnJournalEntryException;
-
-            // Start will read and cache all historical events and then return
-            // If this is the first time then it might take a few minutes
+            _currentLoadFilename = string.Empty;
+            _loadJournalFilenames = _informationManager.ListJournalFiles();
             _informationManager.Start();
+
+            LoadProgress.Raise(this, new ProgressEventArgs(100));
 
             const string Text =
                 "Hello Cmdr {commander:Name}!\nCurrent ship: {ship}\nCurrent star system: {starSystem}\nSessions played: {SessionsPlayed}\nTime played: {TotalTimePlayed}";
@@ -152,55 +161,6 @@ namespace EdSioux.Managers
             var enumValue = (Enum)property.GetValue(source);
             var description = enumValue.Description();
             return !string.IsNullOrEmpty(description) ? description : enumValue.ToString();
-        }
-
-        private bool LoadSiouxData(out SiouxData siouxData, out List<string> errorMessages)
-        {
-            const string Filename = "SiouxData.txt";
-            var filePath = Path.Combine(_appFolderPath, Filename);
-
-            if (!File.Exists(filePath))
-            {
-                using (var resource = Assembly.GetExecutingAssembly().GetManifestResourceStream("EdSioux.Resources.SiouxData.txt"))
-                {
-                    if (resource != null)
-                    {
-                        using (var file = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-                        {
-                            resource.CopyTo(file);
-                        }
-                    }
-                }
-            }
-
-            JObject jObject;
-            try
-            {
-                var json = File.ReadAllText(filePath);
-                jObject = JObject.Parse(json);
-            }
-            catch (Exception exception)
-            {
-                siouxData = null;
-                errorMessages = new List<string> { exception.GetBaseException().Message };
-                return false;
-            }
-
-            var schemaGenerator = new JSchemaGenerator();
-            schemaGenerator.GenerationProviders.Add(new StringEnumGenerationProvider());
-            var schema = schemaGenerator.Generate(typeof(SiouxData), false);
-
-            IList<string> schemaErrorMessages;
-            if (!jObject.IsValid(schema, out schemaErrorMessages))
-            {
-                siouxData = null;
-                errorMessages = schemaErrorMessages.ToList();
-                return false;
-            }
-
-            siouxData = jObject.ToObject<SiouxData>();
-            errorMessages = null;
-            return true;
         }
 
         private void GenerateSiouxDataTokensFile()
@@ -435,10 +395,10 @@ namespace EdSioux.Managers
         {
             var statisticsData = new EventStatisticsData
             {
-                Commander =
-                                             filterOnCurrentCommander
-                                                 ? _informationManager.CurrentCommander.Commander
-                                                 : null,
+                Commander = filterOnCurrentCommander
+                                                         ? _informationManager.CurrentCommander
+                                                             .Commander
+                                                         : null,
                 Event = journalEntry.Event
             };
             var statisticsDataProperties = statisticsData.GetType().GetProperties().ToList();
@@ -476,6 +436,56 @@ namespace EdSioux.Managers
             return count;
         }
 
+        private bool LoadSiouxData(out SiouxData siouxData, out List<string> errorMessages)
+        {
+            const string Filename = "SiouxData.txt";
+            var filePath = Path.Combine(_appFolderPath, Filename);
+
+            if (!File.Exists(filePath))
+            {
+                using (var resource = Assembly.GetExecutingAssembly()
+                    .GetManifestResourceStream("EdSioux.Resources.SiouxData.txt"))
+                {
+                    if (resource != null)
+                    {
+                        using (var file = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                        {
+                            resource.CopyTo(file);
+                        }
+                    }
+                }
+            }
+
+            JObject jObject;
+            try
+            {
+                var json = File.ReadAllText(filePath);
+                jObject = JObject.Parse(json);
+            }
+            catch (Exception exception)
+            {
+                siouxData = null;
+                errorMessages = new List<string> { exception.GetBaseException().Message };
+                return false;
+            }
+
+            var schemaGenerator = new JSchemaGenerator();
+            schemaGenerator.GenerationProviders.Add(new StringEnumGenerationProvider());
+            var schema = schemaGenerator.Generate(typeof(SiouxData), false);
+
+            IList<string> schemaErrorMessages;
+            if (!jObject.IsValid(schema, out schemaErrorMessages))
+            {
+                siouxData = null;
+                errorMessages = schemaErrorMessages.ToList();
+                return false;
+            }
+
+            siouxData = jObject.ToObject<SiouxData>();
+            errorMessages = null;
+            return true;
+        }
+
         private void OnJournalEntryException(object sender, ThreadExceptionEventArgs eventArgs)
         {
             // TODO:
@@ -483,6 +493,25 @@ namespace EdSioux.Managers
 
         private void OnJournalEntryRead(object sender, JournalEntryEventArgs eventArgs)
         {
+            if (!eventArgs.IsLive)
+            {
+                if (eventArgs.Filename == _currentLoadFilename)
+                {
+                    return;
+                }
+
+                _currentLoadFilename = eventArgs.Filename;
+
+                var index = _loadJournalFilenames.IndexOf(eventArgs.Filename);
+                if (index >= 0)
+                {
+                    var percentCompleted = (int)(index * 100 / (float)_loadJournalFilenames.Count);
+                    LoadProgress.Raise(this, new ProgressEventArgs(percentCompleted));
+                }
+
+                return;
+            }
+
             var journalEntry = eventArgs.JournalEntry;
             var siouxEvent = _siouxData.Events.FirstOrDefault(e => e.Type == journalEntry.Event);
             if (siouxEvent == null)
