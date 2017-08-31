@@ -9,7 +9,7 @@ EdSioux will present statistical information as overlays while playing the game 
 
 ## Requirements
 
-* Elite: Dangerous needs to run in windowed mode an full-screen
+* Elite: Dangerous needs to run in windowed mode and full-screen
 * Elite: Dangerous should run on the main display (if multi-display setup)
 * Screen resolution of 1920x1080 is supported
 
