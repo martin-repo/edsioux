@@ -1,4 +1,5 @@
 {
+  "allowAnonymousErrorFeedback": true,
   "filterOnCurrentCommander": true,
   "defaultDisplayDuration": 5,
   "defaultTextColorType": "Headline",
