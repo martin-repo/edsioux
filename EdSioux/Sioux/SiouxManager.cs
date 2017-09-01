@@ -9,13 +9,14 @@ namespace EdSioux.Sioux
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Drawing;
+    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Threading;
-    using System.Windows.Media;
 
     using EdNetApi.Common;
     using EdNetApi.Information;
@@ -29,6 +30,9 @@ namespace EdSioux.Sioux
     using Newtonsoft.Json.Linq;
     using Newtonsoft.Json.Schema;
     using Newtonsoft.Json.Schema.Generation;
+
+    using Brush = System.Windows.Media.Brush;
+    using Brushes = System.Windows.Media.Brushes;
 
     internal class SiouxManager
     {
@@ -48,14 +52,15 @@ namespace EdSioux.Sioux
 
         private SiouxManager()
         {
-            GenerateSiouxDataTokensFile();
-
             var appDataFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             _appFolderPath = Path.Combine(appDataFolderPath, Assembly.GetEntryAssembly().GetName().Name);
             if (!Directory.Exists(_appFolderPath))
             {
                 Directory.CreateDirectory(_appFolderPath);
             }
+
+            GenerateTokenReferenceFile();
+            GenerateColorReferenceFile();
 
             List<string> errorMessages;
             if (!LoadSiouxData(out _siouxData, out errorMessages))
@@ -123,6 +128,12 @@ namespace EdSioux.Sioux
 
         private static string GetOrdinalIndicator(int value)
         {
+            var twoDigitValue = value % 100;
+            if (twoDigitValue > 10 && twoDigitValue < 20)
+            {
+                return "th";
+            }
+
             var digit = value % 10;
             switch (digit)
             {
@@ -132,17 +143,15 @@ namespace EdSioux.Sioux
                     return "nd";
                 case 3:
                     return "rd";
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                    return "th";
-
                 ////case 0:
+                ////case 4:
+                ////case 5:
+                ////case 6:
+                ////case 7:
+                ////case 8:
+                ////case 9:
                 default:
-                    return string.Empty;
+                    return "th";
             }
         }
 
@@ -163,7 +172,52 @@ namespace EdSioux.Sioux
             return !string.IsNullOrEmpty(description) ? description : enumValue.ToString();
         }
 
-        private void GenerateSiouxDataTokensFile()
+        private void GenerateColorReferenceFile()
+        {
+            var colorTypes = Enum.GetValues(typeof(ColorType)).Cast<ColorType>().ToArray();
+
+            var width = 350;
+            var height = 40 + (50 * colorTypes.Length);
+
+            using (var referenceBitmap = new Bitmap(width, height))
+            using (var graphics = Graphics.FromImage(referenceBitmap))
+            using (var font = FontManager.GetFont("EUROCAPS.TTF"))
+            using (var whiteBrush = new SolidBrush(Color.White))
+            using (var blackBrush = new SolidBrush(Color.Black))
+            {
+                graphics.FillRectangle(whiteBrush, 0, 0, width, height);
+
+                graphics.DrawString("Default", font, blackBrush, 150, 5);
+                graphics.DrawString("Current", font, blackBrush, 250, 5);
+
+                var y = 40;
+                foreach (var colorType in colorTypes)
+                {
+                    graphics.DrawString(colorType.ToString(), font, blackBrush, 5, y + 10);
+
+                    var defaultColor = ColorManager.GetColorFromAttribute(colorType);
+                    var defaultDrawingColor = Color.FromArgb(defaultColor.R, defaultColor.G, defaultColor.B);
+                    using (var defaultBrush = new SolidBrush(defaultDrawingColor))
+                    {
+                        graphics.FillRectangle(defaultBrush, 150, y + 10, 80, 30);
+                    }
+
+                    var currentColor = ColorManager.Colors[colorType];
+                    var currentDrawingColor = Color.FromArgb(currentColor.R, currentColor.G, currentColor.B);
+                    using (var currentBrush = new SolidBrush(currentDrawingColor))
+                    {
+                        graphics.FillRectangle(currentBrush, 250, y + 10, 80, 30);
+                    }
+
+                    y += 50;
+                }
+
+                var filePath = Path.Combine(_appFolderPath, "ColorReference.png");
+                referenceBitmap.Save(filePath, ImageFormat.Png);
+            }
+        }
+
+        private void GenerateTokenReferenceFile()
         {
             var builder = new StringBuilder();
             builder.AppendLine("-------------------------------");
@@ -173,11 +227,19 @@ namespace EdSioux.Sioux
             builder.AppendLine("OrdinalCount (example output: 1st, 2nd, 3rd, etc.)");
             typeof(CurrentData).GetProperties().Select(prop => prop.Name).ToList()
                 .ForEach(line => builder.AppendLine(line));
+            typeof(GameStatistics).GetProperties().Select(prop => prop.Name).ToList()
+                .ForEach(line => builder.AppendLine(line));
             builder.AppendLine();
 
-            builder.AppendLine("---------------------");
-            builder.AppendLine("Event specific tokens");
-            builder.AppendLine("---------------------");
+            builder.AppendLine("--------------------------------");
+            builder.AppendLine("Special events");
+            builder.AppendLine("--------------------------------");
+            builder.AppendLine("GamePlayed - Triggers on the hour every hour");
+            builder.AppendLine();
+
+            builder.AppendLine("--------------------------------");
+            builder.AppendLine("Events and event specific tokens");
+            builder.AppendLine("--------------------------------");
 
             var journalTypes = typeof(JournalEntry).Assembly.GetTypes()
                 .Where(type => type.IsClass && type.Namespace == "EdNetApi.Journal.JournalEntries").ToList();
@@ -207,8 +269,9 @@ namespace EdSioux.Sioux
                 }
             }
 
+            var filePath = Path.Combine(_appFolderPath, "TokenReference.txt");
             var siouxDataTokens = builder.ToString();
-            File.WriteAllText("SiouxDataTokens.txt", siouxDataTokens);
+            File.WriteAllText(filePath, siouxDataTokens);
         }
 
         private Brush GetBrushFromToken(Match token)

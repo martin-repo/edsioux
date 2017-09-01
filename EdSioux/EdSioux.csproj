@@ -138,6 +138,7 @@
     <Compile Include="Color\ColorAttribute.cs" />
     <Compile Include="Color\ColorManager.cs" />
     <Compile Include="Color\ColorType.cs" />
+    <Compile Include="Common\FontManager.cs" />
     <Compile Include="Sioux\CurrentData.cs" />
     <Compile Include="Sioux\ProgressEventArgs.cs" />
     <Compile Include="Views\LoadView.xaml.cs">
@@ -185,7 +186,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <Resource Include="Resources\Sintony-Regular.ttf" />
-    <Resource Include="Resources\EUROCAPS.TTF" />
+    <EmbeddedResource Include="Resources\EUROCAPS.TTF" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

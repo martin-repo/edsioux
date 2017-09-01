@@ -34,6 +34,14 @@ namespace EdSioux.Color
 
         public static Dictionary<ColorType, Brush> Brushes { get; }
 
+        public static Color GetColorFromAttribute(ColorType colorType)
+        {
+            var color = EnumExtensions.GetAttributeValue<ColorAttribute, Color>(
+                colorType,
+                attribute => attribute.Color);
+            return color;
+        }
+
         /// <summary>
         /// Applies matrix to the input bitmap
         /// </summary>
@@ -75,17 +83,17 @@ namespace EdSioux.Color
 
         private static Color ApplyMatrix(Color color, float[][] matrix)
         {
-            var rRaw = (matrix[0][0] * color.R) + (matrix[1][0] * color.G) + (matrix[2][0] * color.B);
+            var rRaw = matrix[0][0] * color.R + matrix[1][0] * color.G + matrix[2][0] * color.B;
             var r = (byte)Math.Round(Math.Max(0, Math.Min(rRaw, 255)), MidpointRounding.AwayFromZero);
 
-            var gRaw = (matrix[0][1] * color.R) + (matrix[1][1] * color.G) + (matrix[2][1] * color.B);
+            var gRaw = matrix[0][1] * color.R + matrix[1][1] * color.G + matrix[2][1] * color.B;
             var g = (byte)Math.Round(Math.Max(0, Math.Min(gRaw, 255)), MidpointRounding.AwayFromZero);
 
-            var bRaw = (matrix[0][2] * color.R) + (matrix[1][2] * color.G) + (matrix[2][2] * color.B);
+            var bRaw = matrix[0][2] * color.R + matrix[1][2] * color.G + matrix[2][2] * color.B;
             var b = (byte)Math.Round(Math.Max(0, Math.Min(bRaw, 255)), MidpointRounding.AwayFromZero);
 
             var aRaw = matrix[0].Length > 3
-                           ? (matrix[0][3] * color.R) + (matrix[1][3] * color.G) + (matrix[2][3] * color.B)
+                           ? matrix[0][3] * color.R + matrix[1][3] * color.G + matrix[2][3] * color.B
                            : 255;
             var a = (byte)Math.Round(Math.Max(0, Math.Min(aRaw, 255)), MidpointRounding.AwayFromZero);
 
@@ -117,14 +125,6 @@ namespace EdSioux.Color
             }
 
             return colors;
-        }
-
-        private static Color GetColorFromAttribute(ColorType colorType)
-        {
-            var color = EnumExtensions.GetAttributeValue<ColorAttribute, Color>(
-                colorType,
-                attribute => attribute.Color);
-            return color;
         }
 
         private static float[][] GetColorMatrix(string graphicsConfigurationPath)

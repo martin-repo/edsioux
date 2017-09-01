@@ -21,7 +21,7 @@
     },
 	{
       "type": "GamePlayed",
-      "format": "You've been playing for\n{sessionsPlayed}",
+      "format": "You've been playing for\n{currentSessionPlayed}",
     },
     {
       "type": "LoadGame",
