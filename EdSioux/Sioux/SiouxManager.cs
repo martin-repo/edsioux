@@ -499,17 +499,22 @@ namespace EdSioux.Sioux
             return count;
         }
 
-        private bool LoadSiouxData(out SiouxData siouxData, out List<string> errorMessages)
+        private void SaveSiouxData(string filePath)
         {
-            const string Filename = "SiouxData.txt";
-            var filePath = Path.Combine(_appFolderPath, Filename);
+            const string DefaultFilename = "SiouxData.Default.txt";
+            var defaultFilePath = Path.Combine(_appFolderPath, DefaultFilename);
 
-            if (!File.Exists(filePath))
+            using (var resource = Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("EdSioux.Resources.SiouxData.txt"))
             {
-                using (var resource = Assembly.GetExecutingAssembly()
-                    .GetManifestResourceStream("EdSioux.Resources.SiouxData.txt"))
+                if (resource != null)
                 {
-                    if (resource != null)
+                    using (var file = new FileStream(defaultFilePath, FileMode.Create, FileAccess.Write))
+                    {
+                        resource.CopyTo(file);
+                    }
+
+                    if (!File.Exists(filePath))
                     {
                         using (var file = new FileStream(filePath, FileMode.Create, FileAccess.Write))
                         {
@@ -518,6 +523,13 @@ namespace EdSioux.Sioux
                     }
                 }
             }
+        }
+
+        private bool LoadSiouxData(out SiouxData siouxData, out List<string> errorMessages)
+        {
+            const string Filename = "SiouxData.txt";
+            var filePath = Path.Combine(_appFolderPath, Filename);
+            SaveSiouxData(filePath);
 
             JObject jObject;
             try
