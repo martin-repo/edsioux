@@ -9,6 +9,7 @@ namespace EdSioux.Sioux
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
@@ -17,6 +18,7 @@ namespace EdSioux.Sioux
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Threading;
+    using System.Windows;
 
     using EdNetApi.Common;
     using EdNetApi.Information;
@@ -563,7 +565,18 @@ namespace EdSioux.Sioux
 
         private void OnJournalEntryException(object sender, ThreadExceptionEventArgs eventArgs)
         {
-            // TODO:
+            if (Debugger.IsAttached)
+            {
+                Debugger.Break();
+            }
+
+            const string DefaultFilename = "Exception.txt";
+            var exceptionPath = Path.Combine(_appFolderPath, DefaultFilename);
+            var message = eventArgs.Exception.Message + Environment.NewLine + eventArgs.Exception.StackTrace;
+
+            File.WriteAllText(exceptionPath, message);
+            MessageBox.Show($"Error occurred. Please review {exceptionPath} and contact support.");
+            Application.Current.Shutdown();
         }
 
         private void OnJournalEntryRead(object sender, JournalEntryEventArgs eventArgs)

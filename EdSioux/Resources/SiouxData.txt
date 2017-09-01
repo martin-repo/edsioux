@@ -29,7 +29,7 @@
     },
     {
       "type": "Scanned",
-      "format": "Ship was scanned for {scanType:Information}"
+      "format": "Ship was scanned for {scanType:information}"
     },
     {
       "type": "StartJump",
