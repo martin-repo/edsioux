@@ -58,12 +58,14 @@ Example event:
     "type": "Docked",
     "image": "docked-anchor.png",
     "format": "Docking #{count:friendly} at {stationName:name}",
+    "displayDuration": 9
 }
 ```
 
 * type = event type, see TokenReference.txt for all events
 * image = (NOT YET SUPPORTED) 16x16px icon displayed left of event name
 * format = text format
+* displayDuration = (OPTIONAL) display duration for this specific event
 
 ### Text format
 
