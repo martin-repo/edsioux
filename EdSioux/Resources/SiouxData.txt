@@ -1,14 +1,14 @@
 {
   "allowAnonymousErrorFeedback": true,
   "filterOnCurrentCommander": true,
-  "defaultDisplayDuration": 5,
+  "defaultDisplayDuration": 6,
   "defaultTextColorType": "Headline",
   "defaultTokenColorType": "Default",
   "events": [
     {
       "type": "Docked",
 	  "image": "docked-anchor.png",
-      "format": "Docking #{count:friendly} at {stationName:name}",
+      "format": "Docking #{count:friendly} at {stationName:name}\nMission(s):\n{missionList}",
     },
     {
       "type": "DockingGranted",
@@ -16,7 +16,7 @@
     },
     {
       "type": "FsdJump",
-      "format": "Arriving at {starSystem}\nThis is your {ordinalCount} visit",
+      "format": "Arriving at {starSystem}\nThis is your {ordinalCount} visit\nMission(s):\n{missionList}",
 	  "displayDuration": 9
     },
 	{
@@ -33,7 +33,7 @@
     },
     {
       "type": "StartJump",
-      "format": "Engaging {jumpType} drive\nHeading for {starSystem}"
+      "format": "Engaging {jumpType} drive\nHeading for {starSystem}\nMission(s):\n{missionList}"
     },
     {
       "type": "SupercruiseEntry",

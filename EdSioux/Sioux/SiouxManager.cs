@@ -40,6 +40,7 @@ namespace EdSioux.Sioux
     {
         private const string CountValue = "count";
         private const string OrdinalCountValue = "ordinalcount";
+        private const string MissionListValue = "missionlist";
 
         private static SiouxManager instance;
 
@@ -85,9 +86,9 @@ namespace EdSioux.Sioux
                 Timeout.Infinite);
         }
 
-        public event EventHandler<SiouxEventArgs> SiouxEventReceived;
-
         public event EventHandler<ProgressEventArgs> LoadProgress;
+
+        public event EventHandler<SiouxEventArgs> SiouxEventReceived;
 
         public static SiouxManager Instance => instance ?? (instance = new SiouxManager());
 
@@ -109,7 +110,7 @@ namespace EdSioux.Sioux
             var inlines = GetMessageParts(null, false, Text);
             SiouxEventReceived.Raise(this, new SiouxEventArgs("SIOUX Online", inlines, 15));
 
-            var msToNextHour = (((60 - DateTime.UtcNow.Minute) * 60) - DateTime.UtcNow.Second) * 1000;
+            var msToNextHour = ((60 - DateTime.UtcNow.Minute) * 60 - DateTime.UtcNow.Second) * 1000;
             _onTheHourTimer.Change(msToNextHour, 60 * 60 * 1000);
         }
 
@@ -145,6 +146,7 @@ namespace EdSioux.Sioux
                     return "nd";
                 case 3:
                     return "rd";
+
                 ////case 0:
                 ////case 4:
                 ////case 5:
@@ -179,7 +181,7 @@ namespace EdSioux.Sioux
             var colorTypes = Enum.GetValues(typeof(ColorType)).Cast<ColorType>().ToArray();
 
             var width = 350;
-            var height = 40 + (50 * colorTypes.Length);
+            var height = 40 + 50 * colorTypes.Length;
 
             using (var referenceBitmap = new Bitmap(width, height))
             using (var graphics = Graphics.FromImage(referenceBitmap))
@@ -227,6 +229,7 @@ namespace EdSioux.Sioux
             builder.AppendLine("-------------------------------");
             builder.AppendLine("Count        (example output: 1, 2, 3, etc.)");
             builder.AppendLine("OrdinalCount (example output: 1st, 2nd, 3rd, etc.)");
+            builder.AppendLine("MissionList  (lists all missions, filtered on star system and/or station if they are specified)");
             typeof(CurrentData).GetProperties().Select(prop => prop.Name).ToList()
                 .ForEach(line => builder.AppendLine(line));
             typeof(GameStatistics).GetProperties().Select(prop => prop.Name).ToList()
@@ -296,14 +299,14 @@ namespace EdSioux.Sioux
             string format)
         {
             var currentData = new CurrentData
-            {
-                Commander = _informationManager.CurrentCommander.Commander,
-                Ship = _informationManager.CurrentShip.Ship,
-                StarSystem = _informationManager.CurrentLocation.StarSystem,
-                StationName = _informationManager.CurrentLocation.StationName,
-                Body = _informationManager.CurrentLocation.Body,
-                BodyType = _informationManager.CurrentLocation.BodyType
-            };
+                                  {
+                                      Commander = _informationManager.CurrentCommander.Commander,
+                                      Ship = _informationManager.CurrentShip.Ship,
+                                      StarSystem = _informationManager.CurrentLocation.StarSystem,
+                                      StationName = _informationManager.CurrentLocation.StationName,
+                                      Body = _informationManager.CurrentLocation.Body,
+                                      BodyType = _informationManager.CurrentLocation.BodyType
+                                  };
             var currentDataProperties = currentData.GetType().GetProperties().ToList();
 
             var tokenRegex = new Regex(
@@ -326,6 +329,12 @@ namespace EdSioux.Sioux
                     currentDataProperties);
             }
 
+            var missionList = string.Empty;
+            if (tokenNames.Any(tokenName => tokenName.Equals(MissionListValue)))
+            {
+                missionList = GetMissionList(tokenNames, journalEntry, currentData);
+            }
+
             var defaultBrush = ColorManager.Brushes[_siouxData.DefaultTextColorType];
 
             GameStatistics gameStatistics = null;
@@ -340,10 +349,10 @@ namespace EdSioux.Sioux
                 {
                     messageParts.Add(
                         new SiouxMessagePart
-                        {
-                            Text = format.Substring(index, token.Index - index),
-                            Foreground = defaultBrush
-                        });
+                            {
+                                Text = format.Substring(index, token.Index - index),
+                                Foreground = defaultBrush
+                            });
                 }
 
                 string value = null;
@@ -372,6 +381,13 @@ namespace EdSioux.Sioux
                     }
 
                     messageParts.Add(new SiouxMessagePart { Text = countString, Foreground = brush });
+                    index = token.Index + token.Length;
+                    continue;
+                }
+
+                if (tokenName.Equals(MissionListValue))
+                {
+                    messageParts.Add(new SiouxMessagePart { Text = missionList, Foreground = brush });
                     index = token.Index + token.Length;
                     continue;
                 }
@@ -433,10 +449,10 @@ namespace EdSioux.Sioux
                 {
                     messageParts.Add(
                         new SiouxMessagePart
-                        {
-                            Text = $"(no value found for {tokenName})",
-                            Foreground = Brushes.OrangeRed
-                        });
+                            {
+                                Text = $"(no value found for {tokenName})",
+                                Foreground = Brushes.OrangeRed
+                            });
                 }
 
                 index = token.Index + token.Length;
@@ -450,6 +466,82 @@ namespace EdSioux.Sioux
             return messageParts;
         }
 
+        private string GetMissionList(List<string> tokenNames, JournalEntry journalEntry, CurrentData currentData)
+        {
+            var starSystemProperty = journalEntry.GetType().GetProperty(nameof(CurrentData.StarSystem));
+            var starSystem = starSystemProperty?.GetValue(journalEntry) as string;
+            starSystem = !string.IsNullOrWhiteSpace(starSystem) ? starSystem : currentData.StarSystem;
+
+            var stationNameProperty = journalEntry.GetType().GetProperty(nameof(CurrentData.StationName));
+            var stationName = stationNameProperty?.GetValue(journalEntry) as string;
+            stationName = !string.IsNullOrWhiteSpace(stationName) ? stationName : currentData.StationName;
+
+            var filterOnStarSystem = tokenNames.Any(
+                tokenName => tokenName.Equals(nameof(CurrentData.StarSystem), StringComparison.OrdinalIgnoreCase));
+            var filterOnStationName = tokenNames.Any(
+                tokenName => tokenName.Equals(nameof(CurrentData.StationName), StringComparison.OrdinalIgnoreCase));
+
+            var missions = _informationManager.CurrentMissions;
+            if (filterOnStarSystem)
+            {
+                missions = missions?.Where(
+                    mission => !string.IsNullOrWhiteSpace(mission.DestinationSystem)
+                               && mission.DestinationSystem.Equals(
+                                   starSystem,
+                                   StringComparison.OrdinalIgnoreCase)).ToArray();
+            }
+
+            if (filterOnStationName)
+            {
+                missions = missions?.Where(
+                    mission => !string.IsNullOrWhiteSpace(mission.DestinationStation)
+                               && mission.DestinationStation.Equals(
+                                   stationName,
+                                   StringComparison.OrdinalIgnoreCase)).ToArray();
+            }
+
+            if (missions == null || missions.Length == 0)
+            {
+                return "None";
+            }
+
+            var missionListBuilder = new StringBuilder();
+            if (!filterOnStarSystem && !filterOnStationName)
+            {
+                foreach (var systemGroup in missions.GroupBy(mission => mission.DestinationSystem)
+                    .OrderBy(group => group.Key))
+                {
+                    var destinationSystem = systemGroup.First().DestinationSystem;
+                    if (string.IsNullOrWhiteSpace(destinationSystem))
+                    {
+                        destinationSystem = "(Unknown Star System)";
+                    }
+
+                    missionListBuilder.AppendLine($"{destinationSystem} ({systemGroup.Count()})");
+                }
+            }
+            else if (filterOnStarSystem)
+            {
+                foreach (var stationGroup in missions.GroupBy(mission => mission.DestinationStation)
+                    .OrderBy(group => group.Key))
+                {
+                    var destinationStation = stationGroup.First().DestinationStation;
+                    if (string.IsNullOrWhiteSpace(destinationStation))
+                    {
+                        destinationStation = "(Unknown Station)";
+                    }
+
+                    missionListBuilder.AppendLine($"{destinationStation} ({stationGroup.Count()})");
+                }
+            }
+            else
+            {
+                missionListBuilder.AppendLine($"{missions.Length} mission(s) at this station)");
+            }
+
+            return missionListBuilder.ToString();
+        }
+
         private int GetStatisticsCount(
             List<string> tokenNames,
             bool filterOnCurrentCommander,
@@ -459,13 +551,13 @@ namespace EdSioux.Sioux
             List<PropertyInfo> currentDataProperties)
         {
             var statisticsData = new EventStatisticsData
-            {
-                Commander = filterOnCurrentCommander
+                                     {
+                                         Commander = filterOnCurrentCommander
                                                          ? _informationManager.CurrentCommander
                                                              .Commander
                                                          : null,
-                Event = journalEntry.Event
-            };
+                                         Event = journalEntry.Event
+                                     };
             var statisticsDataProperties = statisticsData.GetType().GetProperties().ToList();
 
             // Remove properties that are not allowed to be overridden
@@ -499,33 +591,6 @@ namespace EdSioux.Sioux
 
             var count = _informationManager.GetEventStatisticsSum(statisticsData);
             return count;
-        }
-
-        private void SaveSiouxData(string filePath)
-        {
-            const string DefaultFilename = "SiouxData.Default.txt";
-            var defaultFilePath = Path.Combine(_appFolderPath, DefaultFilename);
-
-            using (var resource = Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("EdSioux.Resources.SiouxData.txt"))
-            {
-                if (resource != null)
-                {
-                    using (var file = new FileStream(defaultFilePath, FileMode.Create, FileAccess.Write))
-                    {
-                        resource.CopyTo(file);
-                    }
-
-                    if (!File.Exists(filePath))
-                    {
-                        using (var file = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-                        {
-                            resource.Position = 0;
-                            resource.CopyTo(file);
-                        }
-                    }
-                }
-            }
         }
 
         private bool LoadSiouxData(out SiouxData siouxData, out List<string> errorMessages)
@@ -627,6 +692,35 @@ namespace EdSioux.Sioux
                                       : _siouxData.DefaultDisplayDuration;
 
             SiouxEventReceived.Raise(this, new SiouxEventArgs(header, inlines, displayDuration));
+        }
+
+        private void SaveSiouxData(string filePath)
+        {
+            const string DefaultFilename = "SiouxData.Default.txt";
+            var defaultFilePath = Path.Combine(_appFolderPath, DefaultFilename);
+
+            using (var resource = Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("EdSioux.Resources.SiouxData.txt"))
+            {
+                if (resource != null)
+                {
+                    using (var file = new FileStream(defaultFilePath, FileMode.Create, FileAccess.Write))
+                    {
+                        resource.CopyTo(file);
+                    }
+
+                    if (File.Exists(filePath))
+                    {
+                        return;
+                    }
+
+                    using (var file = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                    {
+                        resource.Position = 0;
+                        resource.CopyTo(file);
+                    }
+                }
+            }
         }
 
         private class TokenMatchComparer : IEqualityComparer<Match>

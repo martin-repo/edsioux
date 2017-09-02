@@ -79,11 +79,11 @@
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>
-    <Reference Include="EdNetApi, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EdNetApi.1.6.0\lib\EdNetApi.dll</HintPath>
+    <Reference Include="EdNetApi, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EdNetApi.1.7.0\lib\EdNetApi.dll</HintPath>
     </Reference>
-    <Reference Include="EdNetApi.Common, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EdNetApi.1.6.0\lib\EdNetApi.Common.dll</HintPath>
+    <Reference Include="EdNetApi.Common, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EdNetApi.1.7.0\lib\EdNetApi.Common.dll</HintPath>
     </Reference>
     <Reference Include="Hardcodet.Wpf.TaskbarNotification, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Hardcodet.NotifyIcon.Wpf.1.0.8\lib\net451\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
