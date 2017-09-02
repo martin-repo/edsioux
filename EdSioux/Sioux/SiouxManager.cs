@@ -520,6 +520,7 @@ namespace EdSioux.Sioux
                     {
                         using (var file = new FileStream(filePath, FileMode.Create, FileAccess.Write))
                         {
+                            resource.Position = 0;
                             resource.CopyTo(file);
                         }
                     }
