@@ -19,6 +19,10 @@ EdSioux will present statistical information as overlays while playing the game 
 2. Unzip to where you want the program
 3. Run EdSioux.exe
 
+## Close
+
+Locate the "feather" icon in your traybar, right-click and select "Exit".
+
 ## Uninstall
 
 1. Delete the folder where you unzipped the program
@@ -54,12 +58,14 @@ Example event:
     "type": "Docked",
     "image": "docked-anchor.png",
     "format": "Docking #{count:friendly} at {stationName:name}",
+    "displayDuration": 9
 }
 ```
 
 * type = event type, see TokenReference.txt for all events
 * image = (NOT YET SUPPORTED) 16x16px icon displayed left of event name
 * format = text format
+* displayDuration = (OPTIONAL) display duration for this specific event
 
 ### Text format
 
